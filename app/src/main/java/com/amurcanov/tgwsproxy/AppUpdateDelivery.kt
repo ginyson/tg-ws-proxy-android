@@ -10,9 +10,9 @@ import java.net.URL
 import java.net.UnknownHostException
 
 private const val UPDATE_API_URL =
-    "https://api.github.com/repos/Regstar2/tg-ws-proxy-android/releases?per_page=20"
+    "https://api.github.com/repos/malordin/tg-ws-proxy-android/releases?per_page=20"
 private const val RELEASE_PAGE_PREFIX =
-    "https://github.com/Regstar2/tg-ws-proxy-android/releases/tag/"
+    "https://github.com/malordin/tg-ws-proxy-android/releases/tag/"
 private const val MAX_RELEASE_RESPONSE_BYTES = 1024 * 1024
 private const val MAX_RELEASE_NOTES_CHARS = 6000
 
@@ -140,7 +140,7 @@ object AppUpdateAssetSelector {
     }
 
     private fun isOfficialAssetUrl(url: String, tag: String, name: String): Boolean {
-        val expected = "https://github.com/Regstar2/tg-ws-proxy-android/releases/download/$tag/$name"
+        val expected = "https://github.com/malordin/tg-ws-proxy-android/releases/download/$tag/$name"
         return url == expected
     }
 

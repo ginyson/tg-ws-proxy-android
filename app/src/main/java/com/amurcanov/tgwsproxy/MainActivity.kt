@@ -2372,7 +2372,7 @@ private fun ProxyScreen(
                                 }
                             },
                             onOpenWorkerHelp = {
-                                openUrl("https://github.com/Regstar2/tg-ws-proxy-android/blob/main/docs/cloudflare-worker.md")
+                                openUrl("https://github.com/malordin/tg-ws-proxy-android/blob/main/docs/cloudflare-worker.md")
                             },
                             manualCfDomainsText = manualCfDomainsText,
                             invalidManualCfDomains = invalidManualCfDomains,
@@ -3452,10 +3452,10 @@ fun InfoDialog(onDismiss: () -> Unit) {
 
                 Text(stringResource(R.string.repo_link_label), style = MaterialTheme.typography.bodyMedium)
                 Text(
-                    text = "→ Regstar2/TgWsProxy_Android",
+                    text = "→ malordin/tg-ws-proxy-android",
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(top = 2.dp, start = 8.dp).clickable {
-                        openLink("https://github.com/Regstar2/TgWsProxy_Android")
+                        openLink("https://github.com/malordin/tg-ws-proxy-android")
                     },
                 )
                 Spacer(modifier = Modifier.height(8.dp))
@@ -3479,7 +3479,7 @@ fun InfoDialog(onDismiss: () -> Unit) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     OutlinedButton(
-                        onClick = { openLink("https://github.com/Regstar2/TgWsProxy_Android") },
+                        onClick = { openLink("https://github.com/malordin/tg-ws-proxy-android") },
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(stringResource(R.string.about_open_repo))

@@ -148,7 +148,7 @@ class AppUpdateDeliveryTest {
     @Test
     fun `release URL accepts only semver tags and stays on official repository`() {
         assertEquals(
-            "https://github.com/Regstar2/tg-ws-proxy-android/releases/tag/v1.10.13",
+            "https://github.com/malordin/tg-ws-proxy-android/releases/tag/v1.10.13",
             AppUpdateSelector.officialReleaseUrl("v1.10.13"),
         )
         assertNull(AppUpdateSelector.officialReleaseUrl("../../issues/1"))

@@ -13,7 +13,7 @@ class AppUpdateAssetSelectorTest {
     private fun asset(name: String, size: Long = 20_000_000L, digest: String? = null) =
         GitHubReleaseAsset(
             name = name,
-            downloadUrl = "https://github.com/Regstar2/tg-ws-proxy-android/releases/download/$tag/$name",
+            downloadUrl = "https://github.com/malordin/tg-ws-proxy-android/releases/download/$tag/$name",
             size = size,
             contentType = "application/octet-stream",
             digest = digest,

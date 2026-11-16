@@ -3,25 +3,29 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-val releaseVersionCode = 64
-val releaseVersionName = "1.11.8"
+val releaseVersionCode = 65
+val releaseVersionName = "1.11.8-sni.1"
 // Explicit opt-in: sign the debug-only Worker smoke APK with the existing release key.
 val signedWorkerSmoke = System.getenv("TGWS_SIGNED_WORKER_SMOKE") == "1"
 
 val buildNativeAndroid by tasks.registering(org.gradle.api.tasks.Exec::class) {
-    val script = rootProject.file("scripts/build-native-android.ps1")
+    val isWindows = System.getProperty("os.name").lowercase().contains("windows")
+    val script = rootProject.file(if (isWindows) "scripts/build-native-android.ps1" else "scripts/build-native-android.sh")
     val nativeDir = rootProject.file("native/tgwsproxy")
     val goSources = files(
         rootProject.fileTree(nativeDir) { include("**/*.go", "go.mod", "go.sum") },
     )
     val output = project.file("src/main/jniLibs/arm64-v8a/libtgwsproxy.so")
-    val shell = if (System.getProperty("os.name").lowercase().contains("windows")) "powershell" else "pwsh"
 
     inputs.file(script)
     inputs.files(goSources)
     outputs.file(output)
     workingDir = rootProject.projectDir
-    commandLine(shell, "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script.absolutePath)
+    if (isWindows) {
+        commandLine("powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", script.absolutePath)
+    } else {
+        commandLine("bash", script.absolutePath)
+    }
 }
 
 val generateAppIcons by tasks.registering(org.gradle.api.tasks.Exec::class) {
@@ -45,9 +49,10 @@ tasks.named("preBuild") {
 android {
     namespace = "com.amurcanov.tgwsproxy"
     compileSdk = 35
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
-        applicationId = "io.github.regstar2.tgwsproxy"
+        applicationId = "io.github.malordin.tgwsproxy"
         minSdk = 26
         targetSdk = 35
         versionCode = releaseVersionCode

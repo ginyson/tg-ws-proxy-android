@@ -1,3 +1,5 @@
+> **Форк TgWsProxy SNI:** исправление TLS SNI для Cloudflare Proxy, отдельное приложение `io.github.malordin.tgwsproxy`. [Изменения и сборка](docs/fork-sni.md).
+
 <div align="center">
 
 <img src="icon.png" width="128" alt="Иконка приложения TgWsProxy">

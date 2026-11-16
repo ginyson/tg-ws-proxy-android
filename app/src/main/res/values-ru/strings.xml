@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TgWsProxy</string>
+    <string name="app_name">TgWsProxy SNI</string>
     <string name="screen_main_title">TgWsProxy</string>
     <string name="screen_settings_title">Настройки</string>
     <string name="action_info">инфо</string>
@@ -734,7 +734,7 @@
     <string name="repo_link_label">Репозиторий TgWsProxy Android:</string>
     <string name="about_open_repo">Открыть репозиторий</string>
     <string name="about_copy_version">Скопировать версию</string>
-    <string name="info_repo_body">Репозиторий Android-проекта:\nhttps://github.com/Regstar2/TgWsProxy_Android</string>
+    <string name="info_repo_body">Репозиторий Android-проекта:\nhttps://github.com/malordin/tg-ws-proxy-android</string>
     <string name="info_privacy_body">TgWsProxy работает локально на устройстве и не отправляет настройки на сторонний сервер приложения. Диагностические отчёты могут содержать домены, маршруты и фрагменты логов. Включите маскирование доменов перед публикацией.</string>
     <string name="section_help">Справка</string>
     <string name="tips_section_quick_start">Быстрый старт</string>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">TgWsProxy</string>
+    <string name="app_name">TgWsProxy SNI</string>
     <string name="screen_main_title">TgWsProxy</string>
     <string name="screen_settings_title">Settings</string>
     <string name="action_info">info</string>
@@ -734,7 +734,7 @@
     <string name="repo_link_label">TgWsProxy Android repository:</string>
     <string name="about_open_repo">Open repository</string>
     <string name="about_copy_version">Copy version</string>
-    <string name="info_repo_body">This Android project repository:\nhttps://github.com/Regstar2/TgWsProxy_Android</string>
+    <string name="info_repo_body">This Android project repository:\nhttps://github.com/malordin/tg-ws-proxy-android</string>
     <string name="info_privacy_body">TgWsProxy runs locally on the device and does not send your settings to an app-owned server. Diagnostic reports may include domains, routes and log fragments. Enable domain masking before publishing reports.</string>
     <string name="section_help">Help</string>
     <string name="tips_section_quick_start">Quick start</string>

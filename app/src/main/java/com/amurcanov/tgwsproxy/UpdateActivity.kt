@@ -604,7 +604,7 @@ private fun UpdateScreen(modifier: Modifier, autoDownload: Boolean, quickHandoff
 
 private fun openOfficialRelease(context: Context, tag: String?) {
     val url = tag?.let(AppUpdateSelector::officialReleaseUrl)
-        ?: "https://github.com/Regstar2/tg-ws-proxy-android/releases"
+        ?: "https://github.com/malordin/tg-ws-proxy-android/releases"
     runCatching { context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
 }
 

@@ -5,7 +5,7 @@
     <string name="update_back">Назад</string>
     <string name="update_current_version_title">Установленная версия</string>
     <string name="update_current_version_value">%1$s (код %2$d)</string>
-    <string name="update_source_hint">Метаданные обновлений читаются только из официальных GitHub Releases репозитория Regstar2/tg-ws-proxy-android.</string>
+    <string name="update_source_hint">Метаданные обновлений читаются только из официальных GitHub Releases репозитория malordin/tg-ws-proxy-android.</string>
     <string name="update_status_idle">Проверка обновлений ещё не выполнялась.</string>
     <string name="update_status_checking">Проверка обновлений…</string>
     <string name="update_status_up_to_date">Установлена самая новая подходящая версия.</string>

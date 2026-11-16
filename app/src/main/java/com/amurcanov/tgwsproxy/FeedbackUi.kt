@@ -28,9 +28,9 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 
 private const val BUG_REPORT_URL =
-    "https://github.com/Regstar2/tg-ws-proxy-android/issues/new?template=bug_report.yml"
+    "https://github.com/malordin/tg-ws-proxy-android/issues/new?template=bug_report.yml"
 private const val FEATURE_REQUEST_URL =
-    "https://github.com/Regstar2/tg-ws-proxy-android/issues/new?template=feature_request.yml"
+    "https://github.com/malordin/tg-ws-proxy-android/issues/new?template=feature_request.yml"
 
 internal fun safeFeedbackContext(context: Context): String {
     val packageInfo = runCatching {
