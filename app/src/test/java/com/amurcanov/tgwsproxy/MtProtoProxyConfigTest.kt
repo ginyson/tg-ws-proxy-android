@@ -13,7 +13,7 @@ class MtProtoProxyConfigTest {
         val config = MtProtoProxyConfig.default { fixedSecret }
 
         assertEquals(MtProtoProxyConfig.DEFAULT_HOST, config.host)
-        assertEquals(MtProtoProxyConfig.DEFAULT_PORT, config.port)
+        assertEquals(1444, config.port)
         assertEquals(fixedSecret, config.secret)
         assertFalse(config.fakeTlsPassthrough)
         assertTrue(config.enabled)

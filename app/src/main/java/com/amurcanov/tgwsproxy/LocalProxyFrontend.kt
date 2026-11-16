@@ -1,9 +1,9 @@
 package com.amurcanov.tgwsproxy
 
 internal const val DEFAULT_LOCAL_PROXY_HOST = "127.0.0.1"
-internal const val DEFAULT_LOCAL_PROXY_PORT = 1443
-internal const val LEGACY_DEFAULT_LOCAL_PROXY_PORT = 1081
-internal const val LOCAL_PROXY_PORT_DEFAULT_MIGRATION_KEY = "local_proxy_port_default_1443_migrated"
+internal const val DEFAULT_LOCAL_PROXY_PORT = 1444
+internal const val LEGACY_DEFAULT_LOCAL_PROXY_PORT = 1443
+internal const val LOCAL_PROXY_PORT_DEFAULT_MIGRATION_KEY = "local_proxy_port_default_1444_migrated"
 
 internal enum class LocalProxyFrontendType(val prefValue: String) {
     SOCKS5("socks5"),

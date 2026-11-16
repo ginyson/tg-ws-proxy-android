@@ -5,6 +5,18 @@ import org.junit.Test
 
 class ProxySavedConfigStoreTest {
     @Test
+    fun load_upgradesPreviousForkDefaultTo1444() {
+        val prefs = InMemorySharedPreferences()
+        prefs.edit()
+            .putInt("last_proxy_port", 1443)
+            .putBoolean("last_proxy_port_default_1443_migrated", true)
+            .apply()
+
+        assertEquals(1444, ProxySavedConfigStore(prefs).load().port)
+        assertEquals(1444, ProxySavedConfigStore(prefs).load().port)
+    }
+
+    @Test
     fun saveAndLoad_roundTripsServiceConfig() {
         val prefs = InMemorySharedPreferences()
         val store = ProxySavedConfigStore(prefs)

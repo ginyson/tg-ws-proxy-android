@@ -40,8 +40,8 @@ private keystore for subsequent updates; do not commit it or its passwords.
 
 ## First run
 
-1. Stop the original TgWsProxy before starting this fork: both default to port
-   1443. Alternatively, assign different ports.
+1. This fork defaults to port 1444, while the original uses 1443. The previous
+   fork default 1443 migrates to 1444 when the app is opened; other ports remain.
 2. Start TgWsProxy SNI and use its **Apply in Telegram** action to configure the
    desired Telegram client. A fresh installation has a different MTProto secret.
 3. On the affected mobile network, check that Telegram connects and loads both

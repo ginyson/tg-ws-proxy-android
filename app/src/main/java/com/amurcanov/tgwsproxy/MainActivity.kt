@@ -96,22 +96,6 @@ import kotlin.math.max
 
 // DataCenters list removed
 
-val telegramApps = listOf(
-    "org.telegram.messenger",
-    "org.thunderdog.challegram",
-    "com.radolyn.ayugram",
-    "app.exteragram.messenger",
-    "ir.ilmili.telegraph",
-    "org.telegram.plus",
-    "tw.nekomimi.nekogram",
-    "tw.nekomimi.nekogramx",
-    "org.telegram.mdgram",
-    "com.iMe.android",
-    "app.nicegram",
-    "org.telegram.bgram",
-    "cc.modery.cherrygram",
-    "io.github.nextalone.nagram"
-)
 
 private enum class PendingFolderAction {
     SaveRuntimeLogs,
@@ -3598,31 +3582,25 @@ fun formatLogLine(raw: String): String {
     return raw.trim()
 }
 
+// Like amurcanov's client picker, target each client explicitly so Android's
+// saved default handler cannot silently select a different Telegram client.
 fun openTelegram(context: Context, url: String) {
-    val pm = context.packageManager
-    val uri = Uri.parse(url)
-    
-    for (pkg in telegramApps) {
-        try {
-            pm.getPackageInfo(pkg, 0)
-            val intent = Intent(Intent.ACTION_VIEW, uri)
-            intent.setPackage(pkg)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
-            return
-        } catch (e: PackageManager.NameNotFoundException) {
-            // App not found, skip
-        } catch (e: Exception) {
-            // Activity not found or other err
-        }
+    val viewIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    val clients = context.packageManager
+        .queryIntentActivities(viewIntent, PackageManager.MATCH_DEFAULT_ONLY)
+        .map { it.activityInfo.packageName }
+        .distinct()
+        .map { packageName -> Intent(viewIntent).setPackage(packageName) }
+    if (clients.isEmpty()) {
+        Toast.makeText(context, context.getString(R.string.telegram_not_found), Toast.LENGTH_SHORT).show()
+        return
     }
-    
-    // Fallback: just open any app that handles tg:// link
+    val chooser = Intent.createChooser(clients.first(), context.getString(R.string.telegram_choose_client))
+        .putExtra(Intent.EXTRA_INITIAL_INTENTS, clients.drop(1).toTypedArray())
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     try {
-        val fallbackIntent = Intent(Intent.ACTION_VIEW, uri)
-        fallbackIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        context.startActivity(fallbackIntent)
-    } catch (e: Exception) {
+        context.startActivity(chooser)
+    } catch (_: Exception) {
         Toast.makeText(context, context.getString(R.string.telegram_not_found), Toast.LENGTH_SHORT).show()
     }
 }

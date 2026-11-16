@@ -334,6 +334,7 @@
     <string name="runtime_link_label">Original tg-ws-proxy runtime:</string>
     <string name="android_fork_link_label">Source Android fork:</string>
     <string name="open_link_failed">Could not open the link</string>
+    <string name="telegram_choose_client">Choose Telegram client</string>
     <string name="telegram_not_found">Telegram was not found</string>
     <string name="info_close">Close</string>
     <string name="tips_title">Tips</string>

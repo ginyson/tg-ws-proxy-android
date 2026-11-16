@@ -14,7 +14,7 @@ class MtProtoTelegramLinkTest {
         val link = MtProtoTelegramLinkBuilder.httpsLink(config)
 
         assertEquals(
-            "https://t.me/proxy?server=127.0.0.1&port=1443&secret=dd$fixedSecret",
+            "https://t.me/proxy?server=127.0.0.1&port=1444&secret=dd$fixedSecret",
             link,
         )
     }
@@ -27,7 +27,7 @@ class MtProtoTelegramLinkTest {
         val link = MtProtoTelegramLinkBuilder.httpsLink(config)
 
         assertEquals(
-            "https://t.me/proxy?server=127.0.0.1&port=1443&secret=ee" +
+            "https://t.me/proxy?server=127.0.0.1&port=1444&secret=ee" +
                 fixedSecret + "7777772e676f6f676c652e636f6d",
             link,
         )
@@ -40,7 +40,7 @@ class MtProtoTelegramLinkTest {
         val link = MtProtoTelegramLinkBuilder.tgUri(config)
 
         assertEquals(
-            "tg://proxy?server=127.0.0.1&port=1443&secret=dd$fixedSecret",
+            "tg://proxy?server=127.0.0.1&port=1444&secret=dd$fixedSecret",
             link,
         )
     }

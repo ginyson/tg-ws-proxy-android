@@ -60,7 +60,7 @@ internal class ProxySavedConfigStore(
 
     companion object {
         private const val KEY_LAST_PORT = "last_proxy_port"
-        private const val KEY_LAST_PORT_DEFAULT_MIGRATED = "last_proxy_port_default_1443_migrated"
+        private const val KEY_LAST_PORT_DEFAULT_MIGRATED = "last_proxy_port_default_1444_migrated"
         private const val KEY_LAST_IPS = "last_runtime_ips"
         private const val KEY_LAST_POOL = "last_proxy_pool"
     }
