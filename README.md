@@ -1,5 +1,7 @@
 # TgWsProxy SNI для Android
 
+[![Build and test](https://github.com/malordin/tg-ws-proxy-android/actions/workflows/trusted-ci.yml/badge.svg)](https://github.com/malordin/tg-ws-proxy-android/actions/workflows/trusted-ci.yml)
+
 Публичный форк [Regstar2/tg-ws-proxy-android](https://github.com/Regstar2/tg-ws-proxy-android) с исправлением TLS SNI для Cloudflare Proxy и выбором Telegram-клиента.
 
 **[Скачать APK из последнего релиза](https://github.com/malordin/tg-ws-proxy-android/releases/latest)** · [Сборки Actions](https://github.com/malordin/tg-ws-proxy-android/actions) · [Сообщить о проблеме](https://github.com/malordin/tg-ws-proxy-android/issues)
