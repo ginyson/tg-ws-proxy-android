@@ -181,11 +181,11 @@ class RouteProbeRunner(
         if (out.last().status != RouteProbeStatus.OK) {
             return out
         }
-        out += steps.probeTls(host, host)
+        out += steps.probeTls(domain, host)
         if (config.runWebSocketHandshake && out.last().status == RouteProbeStatus.OK) {
-            out += steps.probeWebSocket(host, host, "/apiws")
+            out += steps.probeWebSocket(domain, host, "/apiws", httpHost = host)
         } else if (!config.runWebSocketHandshake && out.last().status == RouteProbeStatus.OK) {
-            out += steps.probeHttpHead(host, host, "/apiws")
+            out += steps.probeHttpHead(domain, host, "/apiws", httpHost = host)
         }
         return out
     }

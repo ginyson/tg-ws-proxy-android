@@ -359,7 +359,10 @@ func defaultMtProtoCFProxyDial(ctx context.Context, domain, path, logPrefix stri
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	dialer := compatibleWebSocketTLSDialer{ctx: ctx}
+	// CF accepts the zone's TLS name while HTTP Host selects the Telegram DC.
+	// Networks may filter kwsN.<domain> in the unencrypted TLS ClientHello.
+	_, serverName, _ := strings.Cut(domain, ".")
+	dialer := compatibleWebSocketTLSDialer{ctx: ctx, serverName: serverName}
 	ws, err := dialer.connect(domain, domain, path, 10)
 	if err == nil {
 		return ws, nil

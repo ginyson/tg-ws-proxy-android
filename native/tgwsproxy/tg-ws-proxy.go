@@ -716,6 +716,7 @@ func wsConnect(ip, domain, path string, timeout float64) (*RawWebSocket, error) 
 type compatibleWebSocketTLSDialer struct {
 	defaultAttempted bool
 	ctx              context.Context
+	serverName       string
 	dial             func(ip, domain, path string, timeout float64, curves []tls.CurveID) (*RawWebSocket, error)
 }
 
@@ -727,7 +728,7 @@ func (d *compatibleWebSocketTLSDialer) connect(ip, domain, path string, timeout 
 			ctx = context.Background()
 		}
 		dial = func(ip, domain, path string, timeout float64, curves []tls.CurveID) (*RawWebSocket, error) {
-			return wsConnectWithCurvesContext(ctx, ip, domain, path, timeout, curves)
+			return wsConnectWithCurvesContextDial(ctx, ip, domain, d.serverName, path, timeout, curves, nil)
 		}
 	}
 	// Some networks drop the larger hybrid post-quantum ClientHello used by Go's defaults.
@@ -763,10 +764,10 @@ func wsConnectWithCurves(ip, domain, path string, timeout float64, curves []tls.
 }
 
 func wsConnectWithCurvesContext(ctx context.Context, ip, domain, path string, timeout float64, curves []tls.CurveID) (*RawWebSocket, error) {
-	return wsConnectWithCurvesContextDial(ctx, ip, domain, path, timeout, curves, nil)
+	return wsConnectWithCurvesContextDial(ctx, ip, domain, domain, path, timeout, curves, nil)
 }
 
-func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, path string, timeout float64, curves []tls.CurveID, dialContext func(context.Context, string, string) (net.Conn, error)) (*RawWebSocket, error) {
+func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName, path string, timeout float64, curves []tls.CurveID, dialContext func(context.Context, string, string) (net.Conn, error)) (*RawWebSocket, error) {
 	if path == "" {
 		path = "/apiws"
 	}
@@ -783,7 +784,10 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, path string
 		Timeout: time.Duration(dialTimeout * float64(time.Second)),
 	}
 
-	tlsCfg := webSocketTLSConfig(domain, curves)
+	if serverName == "" {
+		serverName = domain
+	}
+	tlsCfg := webSocketTLSConfig(serverName, curves)
 
 	if dialContext == nil {
 		dialContext = dialer.DialContext

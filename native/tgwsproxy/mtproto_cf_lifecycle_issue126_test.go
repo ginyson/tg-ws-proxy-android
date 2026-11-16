@@ -20,7 +20,7 @@ func TestMtProtoCFTLSHandshakeCancelsPromptly(t *testing.T) {
 	finished := make(chan error, 1)
 	go func() {
 		_, err := wsConnectWithCurvesContextDial(
-			ctx, "127.0.0.1", "example.com", "/apiws", 10, classicalTLSCurves(),
+			ctx, "127.0.0.1", "example.com", "example.com", "/apiws", 10, classicalTLSCurves(),
 			func(context.Context, string, string) (net.Conn, error) {
 				close(started)
 				return client, nil
@@ -76,7 +76,7 @@ func TestMtProtoCFTLSDialCancelledBeforeConnect(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	_, err := wsConnectWithCurvesContextDial(
-		ctx, "127.0.0.1", "example.com", "/apiws", 10, classicalTLSCurves(),
+		ctx, "127.0.0.1", "example.com", "example.com", "/apiws", 10, classicalTLSCurves(),
 		func(ctx context.Context, _, _ string) (net.Conn, error) {
 			return nil, ctx.Err()
 		},

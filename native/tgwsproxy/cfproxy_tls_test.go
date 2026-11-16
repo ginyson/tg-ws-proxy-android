@@ -5,9 +5,46 @@ import (
 	"crypto/tls"
 	"errors"
 	"net"
+	"net/http"
+	"net/http/httptest"
 	"reflect"
 	"testing"
 )
+
+func TestWebSocketTLSNameDoesNotChangeHTTPHost(t *testing.T) {
+	for _, tc := range []struct{ host, sni string }{
+		{"kws2.pool.example", "pool.example"},
+		{"kws4.pool.example", "pool.example"},
+		{"kws2.web.telegram.org", ""},
+		{"worker.example", ""},
+	} {
+		t.Run(tc.host, func(t *testing.T) {
+			got := make(chan [3]string, 1)
+			server := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				got <- [3]string{r.TLS.ServerName, r.Host, r.URL.Path}
+				w.Header().Set("Connection", "Upgrade")
+				w.Header().Set("Upgrade", "websocket")
+				w.WriteHeader(http.StatusSwitchingProtocols)
+			}))
+			defer server.Close()
+			ws, err := wsConnectWithCurvesContextDial(context.Background(), "target", tc.host, tc.sni, "/apiws", 2, classicalTLSCurves(),
+				func(ctx context.Context, network, _ string) (net.Conn, error) {
+					return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
+				})
+			if err != nil {
+				t.Fatal(err)
+			}
+			defer ws.Close()
+			wantSNI := tc.sni
+			if wantSNI == "" {
+				wantSNI = tc.host
+			}
+			if actual := <-got; actual != [3]string{wantSNI, tc.host, "/apiws"} {
+				t.Fatalf("SNI/Host/path=%v", actual)
+			}
+		})
+	}
+}
 
 func TestCFProxyTLSClientHelloUsesClassicalGroups(t *testing.T) {
 	client, server := net.Pipe()
