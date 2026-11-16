@@ -3,7 +3,6 @@ package com.amurcanov.tgwsproxy
 import android.Manifest
 import android.content.Context
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -3582,23 +3581,17 @@ fun formatLogLine(raw: String): String {
     return raw.trim()
 }
 
-// Like amurcanov's client picker, target each client explicitly so Android's
-// saved default handler cannot silently select a different Telegram client.
+// Force the system chooser on every tap, including when a default app is set.
+// An implicit target lets Android list all clients without INITIAL_INTENTS limits.
 fun openTelegram(context: Context, url: String) {
-    val viewIntent = Intent(Intent.ACTION_VIEW, Uri.parse(url))
-    val clients = context.packageManager
-        .queryIntentActivities(viewIntent, PackageManager.MATCH_DEFAULT_ONLY)
-        .map { it.activityInfo.packageName }
-        .distinct()
-        .map { packageName -> Intent(viewIntent).setPackage(packageName) }
-    if (clients.isEmpty()) {
+    val target = Intent(Intent.ACTION_VIEW, Uri.parse(url))
+    if (target.resolveActivity(context.packageManager) == null) {
         Toast.makeText(context, context.getString(R.string.telegram_not_found), Toast.LENGTH_SHORT).show()
         return
     }
-    val chooser = Intent.createChooser(clients.first(), context.getString(R.string.telegram_choose_client))
-        .putExtra(Intent.EXTRA_INITIAL_INTENTS, clients.drop(1).toTypedArray())
-        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     try {
+        val chooser = Intent.createChooser(target, context.getString(R.string.telegram_choose_client))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         context.startActivity(chooser)
     } catch (_: Exception) {
         Toast.makeText(context, context.getString(R.string.telegram_not_found), Toast.LENGTH_SHORT).show()

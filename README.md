@@ -36,7 +36,7 @@ Cloudflare получает HTTP Host нужного датацентра, а TL
 
 Кнопка **«Применить в Telegram»** открывает системное окно выбора клиента, даже если в Android уже назначен обработчик по умолчанию. В список попадают установленные приложения, обрабатывающие ссылку `tg://`: обычный Telegram, Beta, Plus и другие совместимые клиенты.
 
-Использован подход из [реализации amurcanov](https://github.com/amurcanov/tg-ws-proxy-android/blob/main/app/src/main/java/com/amurcanov/tgwsproxy/ui/ConnectionTab.kt): отдельные адресованные intents и `Intent.createChooser`. В этом форке клиенты определяются через Android PackageManager, без фиксированного списка пакетов.
+Как и в [реализации amurcanov](https://github.com/amurcanov/tg-ws-proxy-android/blob/main/app/src/main/java/com/amurcanov/tgwsproxy/ui/ConnectionTab.kt), используется системный `Intent.createChooser`. В этом форке Android сам определяет все приложения для `tg://`, без фиксированного списка и ограничения `EXTRA_INITIAL_INTENTS` на два дополнительных клиента в Android 10+. [Документация Android](https://developer.android.com/guide/components/intents-filters#ForceChooser).
 
 ## Как пользоваться
 
@@ -50,13 +50,13 @@ Cloudflare получает HTTP Host нужного датацентра, а TL
 ## Автоматические сборки и релизы
 
 - Каждый push в `main` и каждый pull request запускают Go-тесты, JVM-тесты и сборку debug APK. APK доступен в артефактах **Build and test**.
-- Push тега вида `v1.12.1` запускает **Release**: тесты, сборку подписанного release APK, проверку подписи и публикацию APK вместе с SHA-256 в GitHub Releases.
+- Push тега вида `v1.12.2` запускает **Release**: тесты, сборку подписанного release APK, проверку подписи и публикацию APK вместе с SHA-256 в GitHub Releases.
 - Release также можно запустить вручную из Actions, указав уже существующий тег.
 - Версия тега должна совпадать с `releaseVersionName` в `app/build.gradle.kts`. Для следующего релиза увеличьте также `releaseVersionCode`, закоммитьте изменения и отправьте новый тег.
 
 ```sh
-git tag v1.12.1
-git push origin v1.12.1
+git tag v1.12.2
+git push origin v1.12.2
 ```
 
 Сборка выполняется на GitHub-hosted Ubuntu; собственный runner не нужен. Публикация и ключ подписи недоступны workflow для pull request.
@@ -80,7 +80,7 @@ Debug APK: `app/build/outputs/apk/debug/app-debug.apk`. Для подписан�
 
 Ключи подписи, пароли, `secrets/`, локальные настройки и runtime-логи исключены из Git. История и изменения форка проверены сканером секретов; срабатывания в истории upstream относятся к синтетическим тестовым данным. Приватный ключ подписи в исходники и релиз не включается.
 
-## Проверки версии 1.12.1
+## Проверки версии 1.12.2
 
 Локально пройдены 423 JVM-теста, Go-тесты нативного runtime и проверка подписи release APK. YAML workflow проверен actionlint. Gitleaks не нашёл секретов в коммитах этого форка; при проверке полной истории upstream его срабатывания проверены как тестовые значения, включая пример ключа WebSocket из RFC.
 

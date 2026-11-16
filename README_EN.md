@@ -11,12 +11,12 @@ MTProto, SOCKS5, and Cloudflare diagnostics use the same fix.
 address is **127.0.0.1:1444**. Opening this version migrates the previous fork's
 default 1443 to 1444, preserving other ports. Reapply the proxy link after updating.
 
-**Apply in Telegram** always opens the Android client chooser, using explicit
-intents as in amurcanov's implementation. Installed handlers of `tg://` links are
-discovered dynamically, including Telegram Beta and Plus.
+**Apply in Telegram** always opens the Android client chooser, as in amurcanov's
+user flow. Android lists all handlers of the implicit `tg://` intent, including
+Telegram Beta and Plus, without the Android 10+ limit on EXTRA_INITIAL_INTENTS.
 
 Pushes to main and pull requests run tests and produce a debug APK artifact.
-Pushing a version tag such as `v1.12.0` runs the signed release workflow and
+Pushing a version tag such as `v1.12.2` runs the signed release workflow and
 publishes the APK with its SHA-256 checksum. Signing credentials are stored in
 GitHub Actions Secrets, never in Git. Pull request builds cannot access them.
 
