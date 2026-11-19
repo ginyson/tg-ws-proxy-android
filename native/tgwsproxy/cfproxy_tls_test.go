@@ -136,3 +136,44 @@ func TestCFProxyTLSDoesNotStartFallbackAfterCancellation(t *testing.T) {
 		t.Fatalf("err=%v calls=%d", err, calls)
 	}
 }
+
+func TestPlainCFWebSocketUsesPort80AndKeepsUpgradeHeaders(t *testing.T) {
+	got := make(chan [3]string, 1)
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got <- [3]string{r.Host, r.URL.Path, r.Header.Get("Sec-WebSocket-Protocol")}
+		w.Header().Set("Upgrade", "websocket")
+		w.Header().Set("Connection", "Upgrade")
+		w.WriteHeader(http.StatusSwitchingProtocols)
+	}))
+	defer server.Close()
+	var dialAddress string
+	ws, err := wsConnectWithTLSConfigContextDial(context.Background(), "target", "kws2.pool.example", "/apiws", 2, nil,
+		func(ctx context.Context, network, address string) (net.Conn, error) {
+			dialAddress = address
+			return (&net.Dialer{}).DialContext(ctx, network, server.Listener.Addr().String())
+		})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ws.Close()
+	if dialAddress != "target:80" {
+		t.Fatalf("dialed %s, want port 80", dialAddress)
+	}
+	if actual := <-got; actual != [3]string{"kws2.pool.example", "/apiws", "binary"} {
+		t.Fatalf("upgrade=%v", actual)
+	}
+}
+
+func TestCFNoTLSRequiresExplicitRuntimeSetting(t *testing.T) {
+	for _, tc := range []struct {
+		config string
+		plain  bool
+	}{
+		{"", false}, {"@cfproxy_no_tls=0", false}, {"@cfproxy_no_tls=1", true},
+	} {
+		_, settings, err := parseRuntimeConfig(tc.config)
+		if err != nil || settings.CF.NoTLS != tc.plain {
+			t.Fatalf("config=%q plain=%v err=%v", tc.config, settings.CF.NoTLS, err)
+		}
+	}
+}

@@ -6,6 +6,21 @@ import org.junit.Test
 
 class ProxyRuntimeConfigFactoryTest {
     @Test
+    fun cfProxyPlainTransport_isExplicitAndDoesNotEnableOtherRoutes() {
+        for (plain in listOf(false, true)) {
+            val raw = ConnectionRuntimeConfig.buildRuntimeTokens(
+                dcEntries = emptyList(), mode = ConnectionMode.CFOnly,
+                cfProxyEnabled = true, cfProxyPriority = false, cfProxyOnly = true,
+                cfDomain = "", workerEnabled = false, workerDomain = "",
+                cfProxyNoTls = plain,
+            )
+            assertTrue(raw.contains("@cfproxy_no_tls=${if (plain) 1 else 0}"))
+            assertTrue(raw.contains("@connection_mode=cf_only"))
+            assertTrue(raw.contains("@cfproxy_only=1"))
+        }
+    }
+
+    @Test
     fun runtimePolicy_singleEnabledRouteDisablesFallbackWithoutAddingRoutes() {
         val policy = NetworkRoutePolicy(
             networkType = NetworkProfileType.WIFI,

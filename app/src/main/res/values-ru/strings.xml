@@ -995,4 +995,6 @@
     <string name="routes_live_apply_failed">Маршруты сохранены, но не применены к работающему прокси</string>
     <string name="routes_configuration_required">Требуется настройка</string>
     <string name="notification_configured_priority">Приоритет: %1$s</string>
+    <string name="cf_proxy_no_tls">Cloudflare Proxy без TLS (порт 80)</string>
+    <string name="cf_proxy_no_tls_hint">При таймаутах TLS. Шифрование MTProto Telegram сохраняется, но дополнительной TLS-оболочки между приложением и Cloudflare не будет. Для изменения остановите прокси.</string>
 </resources>

@@ -124,40 +124,50 @@ internal class RouteProbeNetworkSteps(
         }
     }
 
-    fun probeHttpHead(sniHost: String, dialHost: String, path: String = "/", httpHost: String = sniHost): RouteProbeStepResult {
+    private fun connectProbeSocket(sniHost: String, dialHost: String, useTls: Boolean): Socket {
+        val raw = Socket()
+        val port = if (useTls) 443 else 80
+        try {
+            raw.connect(InetSocketAddress(dialHost, port), config.connectTimeoutMs.toInt())
+            raw.soTimeout = config.readTimeoutMs.toInt()
+            if (!useTls) return raw
+            val tls = UpstreamDiagnosticsSsl.sslContext.socketFactory
+                .createSocket(raw, sniHost, port, true) as SSLSocket
+            tls.soTimeout = config.readTimeoutMs.toInt()
+            val params = tls.sslParameters
+            params.serverNames = listOf(SNIHostName(sniHost))
+            tls.sslParameters = params
+            tls.startHandshake()
+            return tls
+        } catch (e: Exception) {
+            raw.close()
+            throw e
+        }
+    }
+
+    fun probeHttpHead(sniHost: String, dialHost: String, path: String = "/", httpHost: String = sniHost, useTls: Boolean = true): RouteProbeStepResult {
         val started = System.nanoTime()
         return try {
-            Socket().use { raw ->
-                raw.connect(InetSocketAddress(dialHost, 443), config.connectTimeoutMs.toInt())
-                raw.soTimeout = config.readTimeoutMs.toInt()
-                val ssl = UpstreamDiagnosticsSsl.sslContext.socketFactory
-                    .createSocket(raw, sniHost, 443, true) as SSLSocket
-                ssl.use { tls ->
-                    tls.soTimeout = config.readTimeoutMs.toInt()
-                    val params = tls.sslParameters
-                    params.serverNames = listOf(SNIHostName(sniHost))
-                    tls.sslParameters = params
-                    tls.startHandshake()
-                    val writer = BufferedWriter(
-                        OutputStreamWriter(tls.getOutputStream(), StandardCharsets.US_ASCII),
+            connectProbeSocket(sniHost, dialHost, useTls).use { socket ->
+                val writer = BufferedWriter(
+                    OutputStreamWriter(socket.getOutputStream(), StandardCharsets.US_ASCII),
+                )
+                writer.write("HEAD $path HTTP/1.1\r\nHost: $httpHost\r\nConnection: close\r\n\r\n")
+                writer.flush()
+                val reader = BufferedReader(
+                    InputStreamReader(socket.getInputStream(), StandardCharsets.US_ASCII),
+                )
+                val status = reader.readLine().orEmpty()
+                val code = status.split(' ').getOrNull(1)?.toIntOrNull()
+                if (code != null && code in 200..399) {
+                    stepOk(RouteProbeStep.HTTP_PROBE, started, status)
+                } else {
+                    stepFail(
+                        RouteProbeStep.HTTP_PROBE,
+                        RouteProbeErrorCode.HTTP_STATUS_ERROR,
+                        status,
+                        started,
                     )
-                    writer.write("HEAD $path HTTP/1.1\r\nHost: $httpHost\r\nConnection: close\r\n\r\n")
-                    writer.flush()
-                    val reader = BufferedReader(
-                        InputStreamReader(tls.getInputStream(), StandardCharsets.US_ASCII),
-                    )
-                    val status = reader.readLine().orEmpty()
-                    val code = status.split(' ').getOrNull(1)?.toIntOrNull()
-                    if (code != null && code in 200..399) {
-                        stepOk(RouteProbeStep.HTTP_PROBE, started, status)
-                    } else {
-                        stepFail(
-                            RouteProbeStep.HTTP_PROBE,
-                            RouteProbeErrorCode.HTTP_STATUS_ERROR,
-                            status,
-                            started,
-                        )
-                    }
                 }
             }
         } catch (e: java.net.SocketTimeoutException) {
@@ -172,31 +182,20 @@ internal class RouteProbeNetworkSteps(
         }
     }
 
-    fun probeWebSocket(sniHost: String, dialHost: String, path: String, httpHost: String = sniHost): RouteProbeStepResult {
+    fun probeWebSocket(sniHost: String, dialHost: String, path: String, httpHost: String = sniHost, useTls: Boolean = true): RouteProbeStepResult {
         val started = System.nanoTime()
         return try {
-            Socket().use { raw ->
-                raw.connect(InetSocketAddress(dialHost, 443), config.connectTimeoutMs.toInt())
-                raw.soTimeout = config.readTimeoutMs.toInt()
-                val ssl = UpstreamDiagnosticsSsl.sslContext.socketFactory
-                    .createSocket(raw, sniHost, 443, true) as SSLSocket
-                ssl.use { tls ->
-                    tls.soTimeout = config.readTimeoutMs.toInt()
-                    val params = tls.sslParameters
-                    params.serverNames = listOf(SNIHostName(sniHost))
-                    tls.sslParameters = params
-                    tls.startHandshake()
-                    val upgraded = performWsUpgrade(tls, httpHost, path)
-                    if (upgraded.success) {
-                        stepOk(RouteProbeStep.WEBSOCKET_HANDSHAKE, started, upgraded.detail)
-                    } else {
-                        stepFail(
-                            RouteProbeStep.WEBSOCKET_HANDSHAKE,
-                            RouteProbeErrorCode.WEBSOCKET_HANDSHAKE_FAILED,
-                            upgraded.detail,
-                            started,
-                        )
-                    }
+            connectProbeSocket(sniHost, dialHost, useTls).use { socket ->
+                val upgraded = performWsUpgrade(socket, httpHost, path)
+                if (upgraded.success) {
+                    stepOk(RouteProbeStep.WEBSOCKET_HANDSHAKE, started, upgraded.detail)
+                } else {
+                    stepFail(
+                        RouteProbeStep.WEBSOCKET_HANDSHAKE,
+                        RouteProbeErrorCode.WEBSOCKET_HANDSHAKE_FAILED,
+                        upgraded.detail,
+                        started,
+                    )
                 }
             }
         } catch (e: java.net.SocketTimeoutException) {
@@ -210,6 +209,7 @@ internal class RouteProbeNetworkSteps(
             )
         }
     }
+
 
     fun probeIpv4Connectivity(): RouteProbeStepResult {
         if (!config.allowIpv4) {

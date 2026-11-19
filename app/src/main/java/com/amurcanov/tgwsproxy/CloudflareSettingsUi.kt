@@ -90,6 +90,8 @@ data class CfDomainsSummary(
 
 @Composable
 fun CloudflareSettingsScreen(
+    cfProxyNoTls: Boolean,
+    onCfProxyNoTlsChange: (Boolean) -> Unit,
     page: CloudflareSettingsPage,
     onPageChange: (CloudflareSettingsPage) -> Unit,
     isProxyRunning: Boolean,
@@ -163,6 +165,8 @@ fun CloudflareSettingsScreen(
     when (page) {
         CloudflareSettingsPage.OVERVIEW -> {
             CloudflareOverviewScreen(
+                cfProxyNoTls = cfProxyNoTls,
+                onCfProxyNoTlsChange = onCfProxyNoTlsChange,
                 modifier = modifier,
                 isProxyRunning = isProxyRunning,
                 workerConfigured = WorkerDomain.normalize(workerDomainText).isNotBlank() ||
@@ -356,6 +360,8 @@ private fun CloudflareSubpageScaffold(
 
 @Composable
 private fun CloudflareOverviewScreen(
+    cfProxyNoTls: Boolean,
+    onCfProxyNoTlsChange: (Boolean) -> Unit,
     isProxyRunning: Boolean,
     workerConfigured: Boolean,
     workerDomainText: String,
@@ -444,6 +450,11 @@ private fun CloudflareOverviewScreen(
         Spacer(modifier = Modifier.height(10.dp))
 
         CfSectionCard(titleRes = R.string.cf_proxy_domains_title) {
+            Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Text(stringResource(R.string.cf_proxy_no_tls), modifier = Modifier.weight(1f))
+                Switch(checked = cfProxyNoTls, onCheckedChange = onCfProxyNoTlsChange, enabled = !isProxyRunning)
+            }
+            Text(stringResource(R.string.cf_proxy_no_tls_hint), style = MaterialTheme.typography.bodySmall)
             MetricLine(
                 stringResource(R.string.cf_proxy_domains_active_count),
                 domainsSummary.activeCount.toString(),

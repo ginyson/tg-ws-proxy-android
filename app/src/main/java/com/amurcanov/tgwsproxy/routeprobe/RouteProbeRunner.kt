@@ -60,7 +60,9 @@ class RouteProbeRunner(
             RouteProbeTarget.IPV6_CONNECTIVITY -> listOf(steps.probeIpv6Connectivity())
         }
         logSteps(target, stepResults)
-        val required = requiredSteps(target)
+        val required = requiredSteps(target).let {
+            if (target == RouteProbeTarget.CLOUDFLARE_PROXY && request.cfProxyNoTls) it - RouteProbeStep.TLS_HANDSHAKE else it
+        }
         val chunkRelay = stepResults.firstOrNull { it.step == RouteProbeStep.CHUNK_RELAY }
         val status = if (target == RouteProbeTarget.WORKER_WEBSOCKET && chunkRelay != null &&
             chunkRelay.status != RouteProbeStatus.OK
@@ -177,15 +179,15 @@ class RouteProbeRunner(
         if (out.last().status != RouteProbeStatus.OK) {
             return out
         }
-        out += steps.probeTcp(host, 443)
+        out += steps.probeTcp(host, if (request.cfProxyNoTls) 80 else 443)
         if (out.last().status != RouteProbeStatus.OK) {
             return out
         }
-        out += steps.probeTls(domain, host)
+        if (!request.cfProxyNoTls) out += steps.probeTls(domain, host)
         if (config.runWebSocketHandshake && out.last().status == RouteProbeStatus.OK) {
-            out += steps.probeWebSocket(domain, host, "/apiws", httpHost = host)
+            out += steps.probeWebSocket(domain, host, "/apiws", httpHost = host, useTls = !request.cfProxyNoTls)
         } else if (!config.runWebSocketHandshake && out.last().status == RouteProbeStatus.OK) {
-            out += steps.probeHttpHead(domain, host, "/apiws", httpHost = host)
+            out += steps.probeHttpHead(domain, host, "/apiws", httpHost = host, useTls = !request.cfProxyNoTls)
         }
         return out
     }

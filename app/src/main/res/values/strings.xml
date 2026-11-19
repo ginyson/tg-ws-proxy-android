@@ -995,4 +995,6 @@
     <string name="routes_live_apply_failed">Route changes saved but not applied to the running proxy</string>
     <string name="routes_configuration_required">Configuration required</string>
     <string name="notification_configured_priority">Priority: %1$s</string>
+    <string name="cf_proxy_no_tls">Cloudflare Proxy without TLS (port 80)</string>
+    <string name="cf_proxy_no_tls_hint">Use when TLS connections time out. Telegram MTProto encryption remains; the extra TLS layer between this app and Cloudflare is disabled. Stop the proxy before changing this setting.</string>
 </resources>

@@ -46,3 +46,11 @@ private keystore for subsequent updates; do not commit it or its passwords.
    desired Telegram client. A fresh installation has a different MTProto secret.
 3. On the affected mobile network, check that Telegram connects and loads both
    messages and media. A running local listener alone does not prove connectivity.
+
+## Optional plain WebSocket mode (1.13.0)
+
+When the network also filters base-domain TLS SNI, stop the proxy and enable
+**Settings → Cloudflare → Cloudflare Proxy without TLS (port 80)**, then start it
+again. The local listener stays on 1444. Telegram MTProto encryption remains,
+but the extra TLS layer to Cloudflare is absent. TLS remains enabled by default.
+The setting is shared by MTProto, SOCKS5, and CF diagnostics.

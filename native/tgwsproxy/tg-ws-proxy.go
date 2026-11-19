@@ -310,6 +310,7 @@ type resolvedIPs struct {
 }
 
 type cfProxyConfig struct {
+	NoTLS    bool
 	Enabled  bool
 	Priority bool
 	Only     bool
@@ -717,10 +718,21 @@ type compatibleWebSocketTLSDialer struct {
 	defaultAttempted bool
 	ctx              context.Context
 	serverName       string
+	plain            bool
 	dial             func(ip, domain, path string, timeout float64, curves []tls.CurveID) (*RawWebSocket, error)
 }
 
 func (d *compatibleWebSocketTLSDialer) connect(ip, domain, path string, timeout float64) (*RawWebSocket, error) {
+	if d.plain {
+		ctx := d.ctx
+		if ctx == nil {
+			ctx = context.Background()
+		}
+		if logDebug != nil {
+			logDebug.Printf("CF proxy WebSocket transport=plain port=80 host=%s", domain)
+		}
+		return wsConnectWithTLSConfigContextDial(ctx, ip, domain, path, timeout, nil, nil)
+	}
 	dial := d.dial
 	if dial == nil {
 		ctx := d.ctx
@@ -768,6 +780,13 @@ func wsConnectWithCurvesContext(ctx context.Context, ip, domain, path string, ti
 }
 
 func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName, path string, timeout float64, curves []tls.CurveID, dialContext func(context.Context, string, string) (net.Conn, error)) (*RawWebSocket, error) {
+	if serverName == "" {
+		serverName = domain
+	}
+	return wsConnectWithTLSConfigContextDial(ctx, ip, domain, path, timeout, webSocketTLSConfig(serverName, curves), dialContext)
+}
+
+func wsConnectWithTLSConfigContextDial(ctx context.Context, ip, domain, path string, timeout float64, tlsCfg *tls.Config, dialContext func(context.Context, string, string) (net.Conn, error)) (*RawWebSocket, error) {
 	if path == "" {
 		path = "/apiws"
 	}
@@ -784,15 +803,14 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 		Timeout: time.Duration(dialTimeout * float64(time.Second)),
 	}
 
-	if serverName == "" {
-		serverName = domain
-	}
-	tlsCfg := webSocketTLSConfig(serverName, curves)
-
 	if dialContext == nil {
 		dialContext = dialer.DialContext
 	}
-	rawConn, err := dialContext(ctx, "tcp", joinAddr(ip, 443))
+	port := 443
+	if tlsCfg == nil {
+		port = 80
+	}
+	rawConn, err := dialContext(ctx, "tcp", joinAddr(ip, port))
 	if err != nil {
 		return nil, &wsStageError{Stage: "tcp_dial", Err: err}
 	}
@@ -800,13 +818,17 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 	stopCancel := context.AfterFunc(ctx, func() { _ = rawConn.Close() })
 	defer stopCancel()
 
-	tlsConn := tls.Client(rawConn, tlsCfg)
-	_ = tlsConn.SetDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
-	if err := tlsConn.HandshakeContext(ctx); err != nil {
-		_ = tlsConn.Close()
-		return nil, &wsStageError{Stage: "tls_handshake", Err: err}
+	var wsConn net.Conn = rawConn
+	if tlsCfg != nil {
+		tlsConn := tls.Client(rawConn, tlsCfg)
+		_ = tlsConn.SetDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
+		if err := tlsConn.HandshakeContext(ctx); err != nil {
+			_ = tlsConn.Close()
+			return nil, &wsStageError{Stage: "tls_handshake", Err: err}
+		}
+		_ = tlsConn.SetDeadline(time.Time{})
+		wsConn = tlsConn
 	}
-	_ = tlsConn.SetDeadline(time.Time{})
 
 	wsKeyBytes := make([]byte, 16)
 	_, _ = rand.Read(wsKeyBytes)
@@ -827,24 +849,24 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 		path, domain, wsKey,
 	)
 
-	_ = tlsConn.SetWriteDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
-	_, err = tlsConn.Write([]byte(req))
+	_ = wsConn.SetWriteDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
+	_, err = wsConn.Write([]byte(req))
 	if err != nil {
-		_ = tlsConn.Close()
+		_ = wsConn.Close()
 		return nil, &wsStageError{Stage: "ws_upgrade_write", Err: err}
 	}
-	_ = tlsConn.SetWriteDeadline(time.Time{})
+	_ = wsConn.SetWriteDeadline(time.Time{})
 
 	// Use buffered reader for efficient header parsing
-	bufReader := bufio.NewReaderSize(tlsConn, 4096)
+	bufReader := bufio.NewReaderSize(wsConn, 4096)
 
-	_ = tlsConn.SetReadDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
+	_ = wsConn.SetReadDeadline(time.Now().Add(time.Duration(timeout * float64(time.Second))))
 
 	var responseLines []string
 	for {
 		line, err := bufReader.ReadString('\n')
 		if err != nil {
-			_ = tlsConn.Close()
+			_ = wsConn.Close()
 			return nil, &wsStageError{Stage: "ws_upgrade_read", Err: err}
 		}
 		line = strings.TrimRight(line, "\r\n")
@@ -853,14 +875,14 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 		}
 		responseLines = append(responseLines, line)
 		if len(responseLines) > 100 {
-			_ = tlsConn.Close()
+			_ = wsConn.Close()
 			return nil, &wsStageError{Stage: "ws_upgrade_read", Err: fmt.Errorf("too many HTTP headers")}
 		}
 	}
-	_ = tlsConn.SetReadDeadline(time.Time{})
+	_ = wsConn.SetReadDeadline(time.Time{})
 
 	if len(responseLines) == 0 {
-		_ = tlsConn.Close()
+		_ = wsConn.Close()
 		return nil, &WsHandshakeError{StatusCode: 0, StatusLine: "empty response"}
 	}
 
@@ -873,11 +895,11 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 
 	if statusCode == 101 {
 		if err := ctx.Err(); err != nil {
-			_ = tlsConn.Close()
+			_ = wsConn.Close()
 			return nil, err
 		}
 		ws := &RawWebSocket{
-			conn:      tlsConn,
+			conn:      wsConn,
 			bufReader: bufReader,
 		}
 		return ws, nil
@@ -892,7 +914,7 @@ func wsConnectWithCurvesContextDial(ctx context.Context, ip, domain, serverName,
 			headers[k] = v
 		}
 	}
-	_ = tlsConn.Close()
+	_ = wsConn.Close()
 	return nil, &WsHandshakeError{
 		StatusCode: statusCode,
 		StatusLine: firstLine,
@@ -3132,6 +3154,8 @@ func parseRuntimeConfig(raw string) (map[int]string, runtimeSettings, error) {
 				}
 			case "cfproxy":
 				cfg.Enabled = parseBoolValue(val)
+			case "cfproxy_no_tls":
+				cfg.NoTLS = parseBoolValue(val)
 			case "cfproxy_priority":
 				cfg.Priority = parseBoolValue(val)
 			case "cfproxy_only":

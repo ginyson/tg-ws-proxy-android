@@ -397,6 +397,7 @@ private fun ProxyScreen(
     }
     var portText by remember { mutableStateOf(initialProxyPortText) }
     var selectedPoolSize by remember { mutableStateOf(prefs.getInt("pool", 4)) }
+    var cfProxyNoTls by remember { mutableStateOf(prefs.getBoolean(ProxyRuntimeConfigFactory.KEY_CFPROXY_NO_TLS, false)) }
     var cfProxyEnabled by remember { mutableStateOf(prefs.getBoolean("cfproxy_enabled", true)) }
     var cfProxyPriority by remember { mutableStateOf(prefs.getBoolean("cfproxy_priority", true)) }
     var cfProxyOnly by remember { mutableStateOf(prefs.getBoolean("cfproxy_only", false)) }
@@ -1262,6 +1263,7 @@ private fun ProxyScreen(
             workerDomain = WorkerRouteResolver.resolveDomain(workerPoolRepository, workerDomainText),
             manualCfDomains = manualCfDomains,
             cachedUpstreamDomains = cfUpstreamState.domains,
+            cfProxyNoTls = cfProxyNoTls,
             networkProfile = currentNetworkProfile,
         )
     }
@@ -2145,6 +2147,11 @@ private fun ProxyScreen(
                             )
                         }
                         CloudflareSettingsScreen(
+                            cfProxyNoTls = cfProxyNoTls,
+                            onCfProxyNoTlsChange = { noTls ->
+                                cfProxyNoTls = noTls
+                                prefs.edit().putBoolean(ProxyRuntimeConfigFactory.KEY_CFPROXY_NO_TLS, noTls).apply()
+                            },
                             page = cloudflareSettingsPage,
                             onPageChange = { cloudflareSettingsPage = it },
                             isProxyRunning = isRunning,

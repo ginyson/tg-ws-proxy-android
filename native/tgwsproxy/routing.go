@@ -119,6 +119,9 @@ func setRuntimeSettings(cfg runtimeSettings) {
 	resetProxyRouteDisplayState()
 	cfPool.SetManualDomains(cfg.CFManualDomains)
 	cfPool.SetCachedUpstreamDomains(cfg.CFCachedUpstream)
+	if prev.CF.NoTLS != cfg.CF.NoTLS {
+		cfPool.ResetCooldowns()
+	}
 	applyAdaptiveProfile(cfg)
 	logPolicyChange(prev, cfg)
 }
@@ -829,7 +832,7 @@ func cfProxyDialHost(ctx context.Context, client net.Conn, init []byte, label st
 	var ws *RawWebSocket
 	var lastErr error
 	usedTarget := "hostname"
-	dialer := compatibleWebSocketTLSDialer{ctx: ctx, serverName: baseDomain}
+	dialer := compatibleWebSocketTLSDialer{ctx: ctx, serverName: baseDomain, plain: getRuntimeSettings().CF.NoTLS}
 
 	ws, lastErr = dialer.connect(host, host, "/apiws", 10)
 	if lastErr != nil {
