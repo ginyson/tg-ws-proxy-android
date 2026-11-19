@@ -7,7 +7,7 @@
 **[Скачать APK из последнего релиза](https://github.com/malordin/tg-ws-proxy-android/releases/latest)** · [Сборки Actions](https://github.com/malordin/tg-ws-proxy-android/actions) · [Сообщить о проблеме](https://github.com/malordin/tg-ws-proxy-android/issues)
 
 Приложение называется **TgWsProxy SNI**, пакет — `io.github.malordin.tgwsproxy`. Оно устанавливается отдельно от оригинала. Требуется Android 8.0+ и устройство ARM64.
-
+2
 ## Что изменено в этом форке
 
 ### Исправление Cloudflare Proxy
