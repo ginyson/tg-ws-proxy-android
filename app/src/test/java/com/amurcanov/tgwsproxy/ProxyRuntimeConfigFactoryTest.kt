@@ -6,6 +6,17 @@ import org.junit.Test
 
 class ProxyRuntimeConfigFactoryTest {
     @Test
+    fun cfProxyDefaultUsesWorkingPort80AndDiagnosticsAgree() {
+        val raw = ConnectionRuntimeConfig.buildRuntimeTokens(
+            dcEntries = emptyList(), mode = ConnectionMode.CFOnly,
+            cfProxyEnabled = true, cfProxyPriority = false, cfProxyOnly = true,
+            cfDomain = "", workerEnabled = false, workerDomain = "",
+        )
+        assertTrue(raw.contains("@cfproxy_no_tls=1"))
+        assertTrue(com.amurcanov.tgwsproxy.routeprobe.RouteProbeRequest().cfProxyNoTls)
+    }
+
+    @Test
     fun cfProxyPlainTransport_isExplicitAndDoesNotEnableOtherRoutes() {
         for (plain in listOf(false, true)) {
             val raw = ConnectionRuntimeConfig.buildRuntimeTokens(

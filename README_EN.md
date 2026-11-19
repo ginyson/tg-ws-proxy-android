@@ -16,7 +16,7 @@ user flow. Android lists all handlers of the implicit `tg://` intent, including
 Telegram Beta and Plus, without the Android 10+ limit on EXTRA_INITIAL_INTENTS.
 
 Pushes to main and pull requests run tests and produce a debug APK artifact.
-Pushing a version tag such as `v1.13.0` runs the signed release workflow and
+Pushing a version tag such as `v1.13.1` runs the signed release workflow and
 publishes the APK with its SHA-256 checksum. Signing credentials are stored in
 GitHub Actions Secrets, never in Git. Pull request builds cannot access them.
 
@@ -28,10 +28,10 @@ upstream proxy work by [Flowseal](https://github.com/Flowseal/tg-ws-proxy).
 
 ## November 19 mobile-network workaround
 
-Version 1.13.0 adds **Settings → Cloudflare → Cloudflare Proxy without TLS (port 80)**.
+Version 1.13.1 defaults to plain WebSocket on port 80 and provides **Settings → Cloudflare → Cloudflare Proxy without TLS (port 80)**.
 Stop the proxy before changing this setting, then start it again. This explicitly
 uses plain WebSocket to CF Proxy; Telegram MTProto encryption remains, but the
-extra TLS layer is absent. TLS stays enabled by default, with no silent downgrade.
+extra TLS layer is absent. Plain WebSocket is enabled by default; TLS can be explicitly selected.
 The local listener remains on port 1444. MTProto, SOCKS5, and CF diagnostics honor
 the same setting; Direct and Worker transports are unchanged.
 

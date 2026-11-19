@@ -143,7 +143,7 @@ var (
 	dcOpt   map[int]string
 	dcOptMu sync.RWMutex
 
-	cfCfg   = cfProxyConfig{Domain: defaultCfProxyDomain}
+	cfCfg   = cfProxyConfig{NoTLS: true, Domain: defaultCfProxyDomain}
 	cfCfgMu sync.RWMutex
 
 	wsBlackMu   sync.RWMutex
@@ -3120,7 +3120,7 @@ func parseCIDRPool(cidrsStr string) (map[int]string, error) {
 
 func parseRuntimeConfig(raw string) (map[int]string, runtimeSettings, error) {
 	dcMap := make(map[int]string)
-	cfg := cfProxyConfig{Domain: defaultCfProxyDomain, Enabled: true}
+	cfg := cfProxyConfig{NoTLS: true, Domain: defaultCfProxyDomain, Enabled: true}
 	settings := runtimeSettings{
 		Mode: "",
 		CF:   cfg,

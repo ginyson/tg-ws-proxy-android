@@ -1,5 +1,6 @@
 package com.amurcanov.tgwsproxy.routeprobe
 
+import com.amurcanov.tgwsproxy.ConnectionRuntimeConfig
 import com.amurcanov.tgwsproxy.NetworkProfile
 import com.amurcanov.tgwsproxy.NetworkProfileType
 import com.amurcanov.tgwsproxy.RouteKind
@@ -71,7 +72,7 @@ data class RouteProbeRequest(
     val manualCfDomains: List<String> = emptyList(),
     val cachedUpstreamDomains: List<String> = emptyList(),
     val networkProfile: NetworkProfile? = null,
-    val cfProxyNoTls: Boolean = false,
+    val cfProxyNoTls: Boolean = ConnectionRuntimeConfig.DEFAULT_CF_PROXY_NO_TLS,
 )
 
 data class RouteProbeResult(

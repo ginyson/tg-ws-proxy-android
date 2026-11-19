@@ -164,12 +164,12 @@ func TestPlainCFWebSocketUsesPort80AndKeepsUpgradeHeaders(t *testing.T) {
 	}
 }
 
-func TestCFNoTLSRequiresExplicitRuntimeSetting(t *testing.T) {
+func TestCFDefaultsToPlainAndAllowsExplicitTLS(t *testing.T) {
 	for _, tc := range []struct {
 		config string
 		plain  bool
 	}{
-		{"", false}, {"@cfproxy_no_tls=0", false}, {"@cfproxy_no_tls=1", true},
+		{"", true}, {"@cfproxy_no_tls=0", false}, {"@cfproxy_no_tls=1", true},
 	} {
 		_, settings, err := parseRuntimeConfig(tc.config)
 		if err != nil || settings.CF.NoTLS != tc.plain {

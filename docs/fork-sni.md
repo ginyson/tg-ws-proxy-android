@@ -52,5 +52,5 @@ private keystore for subsequent updates; do not commit it or its passwords.
 When the network also filters base-domain TLS SNI, stop the proxy and enable
 **Settings → Cloudflare → Cloudflare Proxy without TLS (port 80)**, then start it
 again. The local listener stays on 1444. Telegram MTProto encryption remains,
-but the extra TLS layer to Cloudflare is absent. TLS remains enabled by default.
+but the extra TLS layer to Cloudflare is absent. As of 1.13.1, plain WebSocket is enabled by default; TLS remains an explicit option.
 The setting is shared by MTProto, SOCKS5, and CF diagnostics.

@@ -93,7 +93,7 @@ func (s runtimeSettings) workerRouteAvailable() bool {
 }
 
 var (
-	runtimeCfg   = runtimeSettings{Mode: modeDirectWithFallback, CF: cfProxyConfig{Domain: defaultCfProxyDomain, Enabled: true}}
+	runtimeCfg   = runtimeSettings{Mode: modeDirectWithFallback, CF: cfProxyConfig{NoTLS: true, Domain: defaultCfProxyDomain, Enabled: true}}
 	runtimeCfgMu sync.RWMutex
 	cfPool       = newCFDomainPool()
 )
